@@ -73,8 +73,8 @@ export default function AppShell() {
 
   return (
     <main className="fixed inset-0 overflow-hidden">
-      {/* ---- Canvas layer ---- */}
-      <div className="absolute inset-0">
+      {/* ---- Canvas layer (z-0 contains Leaflet's panes so the UI stays on top) ---- */}
+      <div className="absolute inset-0 z-0">
         {view === "map" ? (
           <MapCanvas
             spots={spots}
