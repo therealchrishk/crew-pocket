@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0b1a" />
+<title>Crew Pocket — Layover gems, crowdsourced by crew</title>
+
+<!-- Leaflet (free, open-source maps) via CDN -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  :root{
+    --bg:#0a0b1a; --fg:#f5f7ff;
+    --aurora:#6d5efc; --aurora2:#c14bff; --coral:#ff5c8a; --mint:#3dd7b6;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%; margin:0; overscroll-behavior:none;}
+  body{
+    background:var(--bg); color:var(--fg);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased; overflow:hidden;
+  }
+  button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+
+  .glass{
+    background:rgba(18,20,42,.66);
+    backdrop-filter:blur(20px) saturate(160%);
+    -webkit-backdrop-filter:blur(20px) saturate(160%);
+  }
+  .no-scrollbar::-webkit-scrollbar{display:none;}
+  .no-scrollbar{-ms-overflow-style:none; scrollbar-width:none;}
+
+  /* ---- Map ---- */
+  #map{position:absolute; inset:0; background:#0a0b1a;}
+  .leaflet-container{background:#0a0b1a; font-family:inherit; outline:none;}
+  .leaflet-control-zoom,.leaflet-control-attribution{display:none!important;}
+  .leaflet-tile-pane{filter:brightness(.92) saturate(1.05);}
+
+  .pin{
+    border-radius:50% 50% 50% 0; transform:rotate(-45deg);
+    border:2px solid rgba(255,255,255,.9);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .pin > span{transform:rotate(45deg); line-height:1;}
+
+  /* ---- Top controls ---- */
+  #top{
+    position:absolute; inset-inline:0; top:0; z-index:20;
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+    padding:calc(env(safe-area-inset-top) + 12px) 16px 0; pointer-events:none;
+  }
+  .row{width:100%; max-width:448px; display:flex; align-items:center; justify-content:space-between;}
+  .brand{font-size:18px; font-weight:800; letter-spacing:-.02em; text-shadow:0 2px 8px rgba(0,0,0,.5); user-select:none;}
+  .brand b{color:var(--aurora2);}
+
+  /* toggle */
+  .toggle{position:relative; display:flex; padding:4px; border-radius:999px; box-shadow:0 8px 24px rgba(0,0,0,.4); ring:1px; pointer-events:auto;}
+  .toggle .thumb{
+    position:absolute; inset:4px auto 4px 4px; width:calc(50% - 4px); border-radius:999px;
+    background:linear-gradient(90deg,var(--aurora),var(--aurora2));
+    box-shadow:0 6px 16px rgba(109,94,252,.5);
+    transition:transform .3s cubic-bezier(.22,1,.36,1);
+  }
+  .toggle.haul .thumb{transform:translateX(100%);}
+  .toggle button{position:relative; z-index:1; display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:999px; font-size:14px; font-weight:600; color:rgba(255,255,255,.55); transition:color .2s;}
+  .toggle button.active{color:#fff;}
+
+  /* search */
+  .searchwrap{width:100%; max-width:448px; pointer-events:auto;}
+  .search{
+    display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:16px;
+    box-shadow:0 20px 50px -12px rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.1);
+    transition:border-color .3s, box-shadow .3s;
+  }
+  .search:focus-within{border-color:rgba(193,75,255,.7); box-shadow:0 10px 40px -8px rgba(193,75,255,.45);}
+  .search .spark{
+    width:36px; height:36px; flex:0 0 auto; display:grid; place-items:center; border-radius:12px;
+    background:linear-gradient(135deg,var(--aurora),var(--aurora2)); font-size:16px; box-shadow:0 6px 16px rgba(109,94,252,.4);
+  }
+  .search input{flex:1; min-width:0; background:none; border:none; color:#fff; font-size:15px; outline:none;}
+  .search input::placeholder{color:rgba(255,255,255,.4);}
+  .search .clear{width:28px; height:28px; flex:0 0 auto; display:grid; place-items:center; border-radius:999px; background:rgba(255,255,255,.1); color:rgba(255,255,255,.7); font-size:12px;}
+
+  .chips{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{padding:6px 12px; border-radius:999px; font-size:12px; font-weight:500; color:rgba(255,255,255,.8); border:1px solid rgba(255,255,255,.1);}
+  .chip:hover{color:#fff; border-color:rgba(193,75,255,.6);}
+  .hint{margin-top:8px; padding:10px 16px; border-radius:12px; font-size:13px; color:var(--coral); border:1px solid rgba(255,255,255,.1);}
+
+  /* ---- Toast ---- */
+  #toast{
+    position:absolute; left:50%; top:33%; transform:translateX(-50%); z-index:30;
+    padding:10px 20px; border-radius:999px; font-size:14px; font-weight:600;
+    border:1px solid rgba(255,255,255,.15); pointer-events:none; opacity:0; transition:opacity .3s;
+  }
+  #toast.show{opacity:1;}
+
+  /* ---- FAB ---- */
+  #fabwrap{position:absolute; right:20px; bottom:calc(env(safe-area-inset-bottom) + 24px); z-index:20; display:flex; flex-direction:column; align-items:flex-end; gap:12px;}
+  #fabhint{padding:6px 12px; border-radius:999px; font-size:12px; font-weight:500; border:1px solid rgba(255,255,255,.1); display:none;}
+  #fabwrap.armed #fabhint{display:block;}
+  #fab{
+    width:64px; height:64px; display:grid; place-items:center; border-radius:999px; color:#fff;
+    background:linear-gradient(135deg,var(--aurora),var(--aurora2)); box-shadow:0 16px 40px rgba(109,94,252,.5);
+    transition:transform .3s, background .3s;
+  }
+  #fab span{font-size:30px; font-weight:300; line-height:1; transition:transform .3s;}
+  #fab:active{transform:scale(.9);}
+  #fabwrap.armed #fab{background:linear-gradient(135deg,var(--coral),var(--aurora2)); transform:scale(1.1); animation:pulse 1.4s infinite;}
+  #fabwrap.armed #fab span{transform:rotate(45deg);}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(193,75,255,.55);}70%{box-shadow:0 0 0 18px rgba(193,75,255,0);}100%{box-shadow:0 0 0 0 rgba(193,75,255,0);}}
+
+  /* ---- Bottom sheet ---- */
+  #scrim{position:absolute; inset:0; z-index:30; background:rgba(0,0,0,.4); backdrop-filter:blur(2px); display:none;}
+  #sheet{
+    position:absolute; inset-inline:0; bottom:0; z-index:40; margin:0 auto; max-width:448px;
+    border-radius:24px 24px 0 0; padding:8px 0 calc(env(safe-area-inset-bottom) + 20px);
+    border:1px solid rgba(255,255,255,.1); box-shadow:0 -12px 50px -12px rgba(0,0,0,.6);
+    transform:translateY(110%); transition:transform .42s cubic-bezier(.22,1,.36,1);
+  }
+  #sheet.open{transform:translateY(0);}
+  .grab{width:48px; height:6px; border-radius:999px; background:rgba(255,255,255,.25); margin:4px auto 12px;}
+  .sheet-pad{padding:0 20px;}
+  .hero{position:relative; height:176px; border-radius:16px; overflow:hidden;}
+  .hero img{width:100%; height:100%; object-fit:cover;}
+  .hero .cat{position:absolute; left:12px; top:12px; padding:4px 12px; border-radius:999px; background:rgba(0,0,0,.45); font-size:12px; font-weight:600; backdrop-filter:blur(4px);}
+  .sheet-head{margin-top:16px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+  .sheet-head h2{margin:0; font-size:20px; font-weight:700;}
+  .sheet-head .city{margin:2px 0 0; font-size:14px; color:rgba(255,255,255,.5);}
+  .closebtn{width:36px; height:36px; flex:0 0 auto; display:grid; place-items:center; border-radius:999px; background:rgba(255,255,255,.1); color:rgba(255,255,255,.7);}
+  .crew{margin-top:16px; display:flex; align-items:center; gap:12px; padding:12px; border-radius:16px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);}
+  .crew .av{width:40px; height:40px; flex:0 0 auto; display:grid; place-items:center; border-radius:999px; font-weight:700; font-size:14px; background:linear-gradient(135deg,var(--aurora),var(--coral));}
+  .crew .name{font-size:14px; font-weight:600;}
+  .crew .sub{font-size:12px; color:rgba(255,255,255,.45);}
+  .reco{margin-top:16px; font-size:15px; line-height:1.6; color:rgba(255,255,255,.8);}
+  .actions{margin-top:20px; display:flex; gap:12px;}
+  .actions .go{flex:1; padding:14px; border-radius:16px; font-size:14px; font-weight:600; color:#fff; background:linear-gradient(90deg,var(--aurora),var(--aurora2)); box-shadow:0 10px 24px rgba(109,94,252,.3);}
+  .actions .go:active{transform:scale(.98);}
+  .actions .fav{width:56px; display:grid; place-items:center; border-radius:16px; background:rgba(255,255,255,.1); font-size:18px;}
+
+  /* ---- Haul view ---- */
+  #haul{position:absolute; inset:0; z-index:10; background:#0a0b1a; display:none; overflow-y:auto; padding:calc(env(safe-area-inset-top) + 120px) 16px 128px;}
+  #haul.show{display:block;}
+  .blob{position:absolute; border-radius:999px; filter:blur(60px); pointer-events:none; animation:float 14s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(20px,-30px) scale(1.08);}}
+  .haul-inner{max-width:448px; margin:0 auto; position:relative;}
+  .haul-inner h1{margin:0; font-size:24px; font-weight:800; letter-spacing:-.02em;}
+  .haul-inner .lede{margin:4px 0 0; font-size:14px; color:rgba(255,255,255,.5);}
+  .tags{margin:16px 0; display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;}
+  .tags button{flex:0 0 auto; padding:8px 16px; border-radius:999px; font-size:14px; font-weight:600; color:rgba(255,255,255,.6); border:1px solid rgba(255,255,255,.1);}
+  .tags button.active{color:#fff; background:linear-gradient(90deg,var(--aurora),var(--aurora2)); border-color:transparent; box-shadow:0 6px 16px rgba(109,94,252,.4);}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .card{border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.1); animation:pop .3s cubic-bezier(.22,1,.36,1) both;}
+  .card:active{transform:scale(.98);}
+  @keyframes pop{from{opacity:0; transform:scale(.85) translateY(6px);}to{opacity:1; transform:scale(1) translateY(0);}}
+  .card .imgwrap{position:relative; aspect-ratio:1/1;}
+  .card img{width:100%; height:100%; object-fit:cover;}
+  .card .origin{position:absolute; left:8px; top:8px; padding:4px 10px; border-radius:999px; background:rgba(0,0,0,.5); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; backdrop-filter:blur(4px);}
+  .card .body{padding:12px;}
+  .card .body h3{margin:0; font-size:14px; font-weight:700; line-height:1.3;}
+  .card .body .store{margin:2px 0 0; font-size:11px; font-weight:600; color:var(--mint);}
+  .card .body .note{margin:6px 0 0; font-size:12px; line-height:1.4; color:rgba(255,255,255,.55);}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div id="haul">
+  <div class="blob" style="left:-80px; top:40px; width:256px; height:256px; background:rgba(109,94,252,.25);"></div>
+  <div class="blob" style="right:-64px; bottom:96px; width:288px; height:288px; background:rgba(255,92,138,.2); animation-delay:-6s;"></div>
+  <div class="haul-inner">
+    <h1>Inflight Haul</h1>
+    <p class="lede">What crew actually buy in bulk — sourced from the galley grapevine.</p>
+    <div class="tags" id="tags"></div>
+    <div class="grid" id="haulGrid"></div>
+  </div>
+</div>
+
+<div id="top">
+  <div class="row">
+    <div class="brand">Crew<b>Pocket</b></div>
+    <div class="toggle glass" id="toggle">
+      <span class="thumb"></span>
+      <button data-view="map" class="active">🗺️ Map</button>
+      <button data-view="haul">🛍️ Inflight Haul</button>
+    </div>
+  </div>
+  <div class="searchwrap" id="searchwrap">
+    <form class="search glass" id="searchForm">
+      <span class="spark">✨</span>
+      <input id="searchInput" type="text" placeholder="Ask Crew Pocket — “late night food in Tokyo”" enterkeyhint="search" autocomplete="off" />
+      <button type="button" class="clear" id="clearBtn" aria-label="Clear" style="display:none;">✕</button>
+    </form>
+    <div class="chips" id="chips"></div>
+    <div class="hint glass" id="hint" style="display:none;"></div>
+  </div>
+</div>
+
+<div id="toast" class="glass"></div>
+
+<div id="fabwrap">
+  <span id="fabhint" class="glass">Tap anywhere on the map 👇</span>
+  <button id="fab" aria-label="Drop a new crew pin"><span>+</span></button>
+</div>
+
+<div id="scrim"></div>
+<div id="sheet" class="glass">
+  <div class="grab"></div>
+  <div class="sheet-pad" id="sheetBody"></div>
+</div>
+
+<script>
+/* ----------------------- Seed data (inlined so file:// works) ----------------------- */
+const CREW_SPOTS = [
+  {id:"tk-001", name:"Ichiran Ramen — Shibuya", lat:35.659, lng:139.7005, city:"Tokyo", category:"Late Night Food", crew:"Sarah, Emirates Crew", recommendation:"Perfect 24H spot to eat right after the midnight landing brief. The spicy tonkotsu ramen is a lifesaver and the solo booths mean zero small talk when you're running on no sleep.", image:"https://images.unsplash.com/photo-1557872943-16a5ac26437e?auto=format&fit=crop&w=900&q=80"},
+  {id:"tk-002", name:"Matsumoto Kiyoshi — Ueno", lat:35.7138, lng:139.7770, city:"Tokyo", category:"Grocery Haul", crew:"Mei, ANA Crew", recommendation:"Best pharmacy to stock up on Hada Labo lotion and Cabin steam eye masks before the long-haul back. Open late and the Ueno branch almost never runs out of the good sunscreen.", image:"https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=900&q=80"},
+  {id:"ny-001", name:"Blue Bottle — Williamsburg", lat:40.7191, lng:-73.9573, city:"New York", category:"Early Coffee", crew:"Diego, Delta Crew", recommendation:"Opens at 6am — clutch when your body clock is still five hours ahead. Grab the New Orleans cold brew, sit by the window, and watch Brooklyn wake up before the crew bus rolls.", image:"https://images.unsplash.com/photo-1453614512568-c4024d13c247?auto=format&fit=crop&w=900&q=80"},
+  {id:"ny-002", name:"Xi'an Famous Foods — Midtown", lat:40.7505, lng:-73.9881, city:"New York", category:"Late Night Food", crew:"Aisha, Qatar Airways Crew", recommendation:"Hand-pulled spicy cumin lamb noodles five minutes from the layover hotel. Cheap, fast, and exactly the kind of warm carb hit you need after a red-eye into JFK.", image:"https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=80"}
+];
+
+const HAUL = [
+  {id:"h-001", product:"Avène Thermal Spring Water", origin:"France", store:"European Pharmacies", tag:"Skincare", note:"Crew bulk-buy staple. Calms cabin-dry skin instantly — grab the 300ml cans in Paris before they sell out.", image:"https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80"},
+  {id:"h-002", product:"Tokyo Banana", origin:"Japan", store:"Haneda Duty Free", tag:"Snacks", note:"The classic Narita/Haneda souvenir haul. Soft sponge cake everyone back home asks for — stock a full box.", image:"https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=800&q=80"},
+  {id:"h-003", product:"La Roche-Posay Cicaplast B5", origin:"France", store:"European Pharmacies", tag:"Skincare", note:"Half the price compared to home. The repair balm is a holy-grail for wind-burnt hands after turnarounds.", image:"https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80"},
+  {id:"h-004", product:"Royce' Nama Chocolate", origin:"Japan", store:"Tokyo Conbini & Airport", tag:"Snacks", note:"Keep it cold in the galley fridge on the way back. Melts-in-mouth — the matcha box is the crew favourite.", image:"https://images.unsplash.com/photo-1481391319762-47dff72954d9?auto=format&fit=crop&w=800&q=80"},
+  {id:"h-005", product:"Lindt Excellence 90%", origin:"Switzerland", store:"Zurich Coop", tag:"Snacks", note:"Long-haul energy that survives a 14-hour duty. Buy the multipack — it's a fraction of the onboard price.", image:"https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&w=800&q=80"},
+  {id:"h-006", product:"Hada Labo Gokujyun Lotion", origin:"Japan", store:"Matsumoto Kiyoshi", tag:"Skincare", note:"Hydration hero for pressurised cabins. Layer it before the eye mask — the crew swear by the refill bottles.", image:"https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?auto=format&fit=crop&w=800&q=80"}
+];
+
+const PLACES = [
+  {name:"Tokyo", aliases:["tokyo","haneda","narita","shibuya","tky","hnd","nrt"], lat:35.6762, lng:139.6503, zoom:12},
+  {name:"New York", aliases:["new york","nyc","manhattan","brooklyn","jfk","newark"], lat:40.7308, lng:-73.9876, zoom:12},
+  {name:"London", aliases:["london","heathrow","lhr","lon"], lat:51.5072, lng:-0.1276, zoom:12},
+  {name:"Paris", aliases:["paris","cdg","charles de gaulle"], lat:48.8566, lng:2.3522, zoom:12},
+  {name:"Dubai", aliases:["dubai","dxb"], lat:25.2048, lng:55.2708, zoom:11},
+  {name:"Singapore", aliases:["singapore","changi","sin"], lat:1.3521, lng:103.8198, zoom:12}
+];
+
+const CATEGORY_COLORS = {
+  "Late Night Food":"#ff5c8a", "Early Coffee":"#f6b73c", "Grocery Haul":"#3dd7b6", default:"#6d5efc"
+};
+
+function matchPlace(q){
+  q = q.toLowerCase(); let best=null, len=0;
+  for(const p of PLACES) for(const a of p.aliases)
+    if(q.includes(a) && a.length>len){best=p; len=a.length;}
+  return best;
+}
+
+/* ----------------------- Map ----------------------- */
+const spots = [...CREW_SPOTS];
+let activeId = null, armed = false;
+const markers = {};
+
+const map = L.map("map", {center:[35.66,139.7], zoom:12, zoomControl:false, worldCopyJump:true});
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+  attribution:"&copy; OpenStreetMap &copy; CARTO"
+}).addTo(map);
+
+function makeIcon(spot, active){
+  const color = CATEGORY_COLORS[spot.category] || CATEGORY_COLORS.default;
+  const size = active ? 46 : 38;
+  return L.divIcon({
+    className:"", iconSize:[size,size], iconAnchor:[size/2,size],
+    html:`<div class="pin" style="width:${size}px;height:${size}px;
+      background:linear-gradient(135deg,${color},${color}cc);
+      box-shadow:0 8px 18px ${color}66,0 2px 6px rgba(0,0,0,.4);
+      ${active ? 'animation:pulse 1.6s infinite;' : ''}">
+      <span style="font-size:${active?18:15}px;">📍</span></div>`
+  });
+}
+
+function renderMarkers(){
+  spots.forEach(spot=>{
+    if(markers[spot.id]){
+      markers[spot.id].setIcon(makeIcon(spot, spot.id===activeId));
+      return;
+    }
+    const m = L.marker([spot.lat,spot.lng], {icon:makeIcon(spot, spot.id===activeId)})
+      .addTo(map).on("click", ()=>selectSpot(spot.id));
+    markers[spot.id] = m;
+  });
+}
+renderMarkers();
+
+map.on("click", e=>{
+  if(!armed) return;
+  const id = "me-"+Date.now();
+  spots.push({
+    id, name:"Your new gem", lat:e.latlng.lat, lng:e.latlng.lng, city:"Dropped pin",
+    category:"Grocery Haul", crew:"You, Crew Pocket",
+    recommendation:"You just dropped a pin here. Add a tip so the next crew rotating through this layover knows what makes this spot special.",
+    image:"https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=80"
+  });
+  setArmed(false);
+  renderMarkers();
+  selectSpot(id);
+});
+
+function flyTo(lat,lng,zoom,label){
+  setView("map");
+  map.flyTo([lat,lng], zoom, {duration:1.5, easeLinearity:.25});
+  if(label) showToast("Panning to "+label+" ✈️");
+}
+
+/* ----------------------- Bottom sheet ----------------------- */
+const sheet = document.getElementById("sheet");
+const scrim = document.getElementById("scrim");
+const sheetBody = document.getElementById("sheetBody");
+
+function selectSpot(id){
+  const spot = spots.find(s=>s.id===id); if(!spot) return;
+  activeId = id; renderMarkers();
+  map.flyTo([spot.lat,spot.lng], Math.max(map.getZoom(),14), {duration:1.2});
+  sheetBody.innerHTML = `
+    <div class="hero">
+      <img src="${spot.image}" alt="${spot.name}" />
+      <span class="cat">${spot.category}</span>
+    </div>
+    <div class="sheet-head">
+      <div><h2>${spot.name}</h2><p class="city">📍 ${spot.city}</p></div>
+      <button class="closebtn" id="sheetClose" aria-label="Close">✕</button>
+    </div>
+    <div class="crew">
+      <div class="av">${spot.crew.charAt(0)}</div>
+      <div><div class="name">${spot.crew}</div><div class="sub">Verified layover tip</div></div>
+    </div>
+    <p class="reco">“${spot.recommendation}”</p>
+    <div class="actions">
+      <button class="go">Get Directions</button>
+      <button class="fav">♥</button>
+    </div>`;
+  document.getElementById("sheetClose").onclick = closeSheet;
+  scrim.style.display = "block";
+  sheet.classList.add("open");
+}
+function closeSheet(){
+  sheet.classList.remove("open");
+  scrim.style.display = "none";
+  activeId = null; renderMarkers();
+}
+scrim.onclick = closeSheet;
+
+/* ----------------------- FAB ----------------------- */
+const fabwrap = document.getElementById("fabwrap");
+function setArmed(v){ armed = v; fabwrap.classList.toggle("armed", v); }
+document.getElementById("fab").onclick = ()=> setArmed(!armed);
+
+/* ----------------------- Toast ----------------------- */
+const toastEl = document.getElementById("toast");
+let toastTimer;
+function showToast(msg){
+  toastEl.textContent = msg; toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> toastEl.classList.remove("show"), 1800);
+}
+
+/* ----------------------- Search ----------------------- */
+const form = document.getElementById("searchForm");
+const input = document.getElementById("searchInput");
+const clearBtn = document.getElementById("clearBtn");
+const hint = document.getElementById("hint");
+const chips = document.getElementById("chips");
+const SUGGESTIONS = ["Late night food in Tokyo","Early coffee in New York","Paris","Dubai"];
+
+SUGGESTIONS.forEach(s=>{
+  const b = document.createElement("button");
+  b.type="button"; b.className="chip glass"; b.textContent=s;
+  b.onmousedown = e=>{ e.preventDefault(); input.value=s; runSearch(s); };
+  chips.appendChild(b);
+});
+
+function runSearch(raw){
+  const place = matchPlace(raw);
+  if(place){
+    hint.style.display="none";
+    flyTo(place.lat, place.lng, place.zoom, place.name);
+  } else if(raw.trim()){
+    hint.textContent = `Hmm, no crew gems indexed for "${raw.trim()}" yet — try ${PLACES.slice(0,3).map(p=>p.name).join(", ")}.`;
+    hint.style.display="block";
+  }
+}
+form.onsubmit = e=>{ e.preventDefault(); runSearch(input.value); };
+input.oninput = ()=>{
+  clearBtn.style.display = input.value ? "grid" : "none";
+  if(input.value) hint.style.display="none";
+};
+clearBtn.onclick = ()=>{ input.value=""; clearBtn.style.display="none"; hint.style.display="none"; };
+
+/* ----------------------- View toggle ----------------------- */
+const toggle = document.getElementById("toggle");
+const haulView = document.getElementById("haul");
+const searchwrap = document.getElementById("searchwrap");
+let view = "map";
+
+function setView(v){
+  view = v;
+  toggle.classList.toggle("haul", v==="haul");
+  toggle.querySelectorAll("button").forEach(b=> b.classList.toggle("active", b.dataset.view===v));
+  haulView.classList.toggle("show", v==="haul");
+  searchwrap.style.display = v==="map" ? "block" : "none";
+  fabwrap.style.display = v==="map" ? "flex" : "none";
+  if(v==="map") setTimeout(()=> map.invalidateSize(), 50);
+}
+toggle.querySelectorAll("button").forEach(b=> b.onclick = ()=> setView(b.dataset.view));
+
+/* ----------------------- Haul grid ----------------------- */
+const TAGS = ["All", ...new Set(HAUL.map(h=>h.tag))];
+const tagsEl = document.getElementById("tags");
+const haulGrid = document.getElementById("haulGrid");
+let activeTag = "All";
+
+function renderTags(){
+  tagsEl.innerHTML = "";
+  TAGS.forEach(t=>{
+    const b = document.createElement("button");
+    b.textContent = t; b.className = t===activeTag ? "active" : "glass";
+    b.onclick = ()=>{ activeTag=t; renderTags(); renderHaul(); };
+    tagsEl.appendChild(b);
+  });
+}
+function renderHaul(){
+  const items = activeTag==="All" ? HAUL : HAUL.filter(h=>h.tag===activeTag);
+  haulGrid.innerHTML = "";
+  items.forEach((item,i)=>{
+    const el = document.createElement("article");
+    el.className = "card glass";
+    el.style.animationDelay = (i*45)+"ms";
+    el.innerHTML = `
+      <div class="imgwrap">
+        <img src="${item.image}" alt="${item.product}" />
+        <span class="origin">${item.origin}</span>
+      </div>
+      <div class="body">
+        <h3>${item.product}</h3>
+        <p class="store">${item.store}</p>
+        <p class="note">${item.note}</p>
+      </div>`;
+    haulGrid.appendChild(el);
+  });
+}
+renderTags();
+renderHaul();
+</script>
+</body>
+</html>
