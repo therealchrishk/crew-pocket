@@ -33,7 +33,7 @@
   .no-scrollbar{-ms-overflow-style:none; scrollbar-width:none;}
 
   /* ---- Map ---- */
-  #map{position:absolute; inset:0; background:#0a0b1a;}
+  #map{position:absolute; inset:0; z-index:0; background:#0a0b1a;}
   .leaflet-container{background:#0a0b1a; font-family:inherit; outline:none;}
   .leaflet-control-zoom,.leaflet-control-attribution{display:none!important;}
   .leaflet-tile-pane{filter:brightness(.92) saturate(1.05);}
@@ -397,6 +397,7 @@ let view = "map";
 
 function setView(v){
   view = v;
+  closeSheet();
   toggle.classList.toggle("haul", v==="haul");
   toggle.querySelectorAll("button").forEach(b=> b.classList.toggle("active", b.dataset.view===v));
   haulView.classList.toggle("show", v==="haul");
