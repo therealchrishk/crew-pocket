@@ -14,10 +14,10 @@ const OPTIONS: { id: ViewMode; label: string; icon: string }[] = [
 
 export default function ViewToggle({ mode, onChange }: Props) {
   return (
-    <div className="glass pointer-events-auto relative flex rounded-full p-1 ring-1 ring-white/10 shadow-xl">
+    <div className="parchment-glass pointer-events-auto relative flex rounded-full p-1 ring-1 ring-forest/15 shadow-lg">
       {/* sliding thumb */}
       <span
-        className="absolute inset-y-1 w-[calc(50%-0.25rem)] rounded-full bg-gradient-to-r from-[var(--color-aurora)] to-[var(--color-aurora-2)] shadow-lg transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)]"
+        className="absolute inset-y-1 w-[calc(50%-0.25rem)] rounded-full bg-gradient-to-r from-forest to-[#1c2f24] shadow-md transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)]"
         style={{ transform: mode === "haul" ? "translateX(100%)" : "translateX(0)" }}
       />
       {OPTIONS.map((o) => (
@@ -25,7 +25,7 @@ export default function ViewToggle({ mode, onChange }: Props) {
           key={o.id}
           onClick={() => onChange(o.id)}
           className={`relative z-10 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-            mode === o.id ? "text-white" : "text-white/55"
+            mode === o.id ? "text-cream" : "text-ink/55"
           }`}
         >
           <span className="text-xs">{o.icon}</span>

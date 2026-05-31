@@ -6,10 +6,10 @@ import L from "leaflet";
 import type { CrewSpot, FlyTarget } from "@/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  "Late Night Food": "#ff5c8a",
-  "Early Coffee": "#f6b73c",
-  "Grocery Haul": "#3dd7b6",
-  default: "#6d5efc",
+  "Late Night Food": "#ff2e7e", // electric pink
+  "Early Coffee": "#b89a5e", // aged gilt
+  "Grocery Haul": "#294234", // cypress green
+  default: "#294234",
 };
 
 function spotIcon(spot: CrewSpot, active: boolean) {
@@ -81,7 +81,7 @@ export default function MapCanvas({
       worldCopyJump
     >
       <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         attribution='&copy; OpenStreetMap &copy; CARTO'
       />
       <FlyController target={flyTarget} />

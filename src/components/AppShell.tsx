@@ -14,10 +14,10 @@ import HaulView from "./HaulView";
 const MapCanvas = dynamic(() => import("./MapCanvas"), {
   ssr: false,
   loading: () => (
-    <div className="grid h-full w-full place-items-center bg-[#0a0b1a]">
-      <div className="flex flex-col items-center gap-3 text-white/50">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-[var(--color-aurora-2)]" />
-        <span className="text-sm">Loading the crew map…</span>
+    <div className="pastoral grid h-full w-full place-items-center">
+      <div className="flex flex-col items-center gap-3 text-ink/60">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-forest/20 border-t-pink" />
+        <span className="text-sm">Composing the crew map…</span>
       </div>
     </div>
   ),
@@ -74,7 +74,7 @@ export default function AppShell() {
   return (
     <main className="fixed inset-0 overflow-hidden">
       {/* ---- Canvas layer (z-0 contains Leaflet's panes so the UI stays on top) ---- */}
-      <div className="absolute inset-0 z-0">
+      <div className="map-paint absolute inset-0 z-0">
         {view === "map" ? (
           <MapCanvas
             spots={spots}
@@ -84,19 +84,38 @@ export default function AppShell() {
             onMapClick={handleMapClick}
           />
         ) : (
-          <div className="relative h-full w-full bg-[#0a0b1a]">
-            <div className="animate-float-blob pointer-events-none absolute -left-20 top-10 h-64 w-64 rounded-full bg-[var(--color-aurora)]/25 blur-3xl" />
-            <div className="animate-float-blob pointer-events-none absolute -right-16 bottom-24 h-72 w-72 rounded-full bg-[var(--color-coral)]/20 blur-3xl [animation-delay:-6s]" />
+          <div className="pastoral relative h-full w-full">
             <HaulView />
           </div>
         )}
       </div>
 
+      {/* ---- Collage texture: blueprint grid + painterly vignette over the map ---- */}
+      {view === "map" && (
+        <>
+          <div className="grid-lines pointer-events-none absolute inset-0 z-[5] opacity-60" />
+          <div
+            className="pointer-events-none absolute inset-0 z-[5]"
+            style={{
+              boxShadow:
+                "inset 0 0 160px 40px rgba(35,42,31,0.18), inset 0 0 60px rgba(41,66,52,0.12)",
+            }}
+          />
+          {/* surreal floating accents */}
+          <div className="animate-drift pointer-events-none absolute left-6 top-40 z-[6] text-3xl opacity-70 [--rot:-8deg] drop-shadow">
+            🕊️
+          </div>
+          <div className="animate-drift pointer-events-none absolute right-8 top-[58%] z-[6] text-3xl opacity-60 [--rot:12deg] [animation-delay:-5s]">
+            🛹
+          </div>
+        </>
+      )}
+
       {/* ---- Top floating controls ---- */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex flex-col items-center gap-3 px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
         <div className="flex w-full max-w-md items-center justify-between">
-          <h1 className="select-none text-lg font-extrabold tracking-tight text-white drop-shadow">
-            Crew<span className="text-[var(--color-aurora-2)]">Pocket</span>
+          <h1 className="font-display select-none text-2xl font-extrabold tracking-tight text-ink">
+            Crew<span className="italic text-pink">Pocket</span>
           </h1>
           <ViewToggle mode={view} onChange={setView} />
         </div>
@@ -109,7 +128,7 @@ export default function AppShell() {
 
       {/* ---- Toast ---- */}
       {toast && (
-        <div className="animate-pop-in glass pointer-events-none absolute left-1/2 top-1/3 z-30 -translate-x-1/2 rounded-full px-5 py-2.5 text-sm font-semibold text-white ring-1 ring-white/15">
+        <div className="animate-pop-in parchment-glass pointer-events-none absolute left-1/2 top-1/3 z-30 -translate-x-1/2 rounded-full px-5 py-2.5 text-sm font-semibold text-ink ring-1 ring-forest/15">
           {toast}
         </div>
       )}
@@ -118,7 +137,7 @@ export default function AppShell() {
       {view === "map" && (
         <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+1.5rem)] right-5 z-20 flex flex-col items-end gap-3">
           {armed && (
-            <span className="animate-pop-in glass rounded-full px-3 py-1.5 text-xs font-medium text-white ring-1 ring-white/10">
+            <span className="animate-pop-in parchment-glass rounded-full px-3 py-1.5 text-xs font-medium text-ink ring-1 ring-forest/15">
               Tap anywhere on the map 👇
             </span>
           )}

@@ -16,9 +16,10 @@ export default function HaulView() {
     <div className="no-scrollbar h-full overflow-y-auto px-4 pb-32 pt-[calc(env(safe-area-inset-top)+7.5rem)]">
       <div className="mx-auto max-w-md">
         <header className="mb-4">
-          <h1 className="text-2xl font-extrabold tracking-tight text-white">Inflight Haul</h1>
-          <p className="mt-1 text-sm text-white/50">
-            What crew actually buy in bulk — sourced from the galley grapevine.
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink">The Galley Grapevine</p>
+          <h1 className="font-display mt-1 text-4xl font-extrabold leading-none text-ink">Inflight Haul</h1>
+          <p className="mt-2 text-sm text-ink/55">
+            What crew actually buy in bulk — curated like a still-life.
           </p>
         </header>
 
@@ -29,8 +30,8 @@ export default function HaulView() {
               onClick={() => setTag(t)}
               className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${
                 tag === t
-                  ? "bg-gradient-to-r from-[var(--color-aurora)] to-[var(--color-aurora-2)] text-white shadow-lg"
-                  : "glass text-white/60 ring-1 ring-white/10"
+                  ? "bg-gradient-to-r from-forest to-[#1c2f24] text-cream shadow-md"
+                  : "parchment-glass text-ink/60 ring-1 ring-forest/15"
               }`}
             >
               {t}
@@ -42,7 +43,7 @@ export default function HaulView() {
           {visible.map((item, idx) => (
             <article
               key={item.id}
-              className="animate-pop-in glass overflow-hidden rounded-2xl ring-1 ring-white/10 transition active:scale-[.98]"
+              className="animate-pop-in parchment overflow-hidden rounded-2xl ring-1 ring-forest/10 transition active:scale-[.98]"
               style={{ animationDelay: `${idx * 45}ms` }}
             >
               <div className="relative aspect-square w-full">
@@ -54,14 +55,14 @@ export default function HaulView() {
                   className="object-cover"
                   unoptimized
                 />
-                <span className="absolute left-2 top-2 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur">
+                <span className="absolute left-2 top-2 rounded-full bg-cream/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-forest backdrop-blur">
                   {item.origin}
                 </span>
               </div>
               <div className="p-3">
-                <h3 className="text-sm font-bold leading-snug text-white">{item.product}</h3>
-                <p className="mt-0.5 text-[11px] font-medium text-[var(--color-mint)]">{item.store}</p>
-                <p className="mt-1.5 text-[12px] leading-snug text-white/55">{item.note}</p>
+                <h3 className="text-sm font-bold leading-snug text-ink">{item.product}</h3>
+                <p className="mt-0.5 text-[11px] font-medium text-pink">{item.store}</p>
+                <p className="mt-1.5 text-[12px] leading-snug text-ink/55">{item.note}</p>
               </div>
             </article>
           ))}

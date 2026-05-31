@@ -1,20 +1,38 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+/* ===========================================================
+   Urban Renaissance Collage — design tokens
+   Classical oil-painting warmth + clean modern interface
+   =========================================================== */
 :root {
-  --background: #0a0b1a;
-  --foreground: #f5f7ff;
+  --cream: #efe9da; /* parchment canvas */
+  --cream-2: #f6f2e8; /* lifted surface */
+  --ink: #232a1f; /* deep charcoal-green text */
+  --forest: #294234; /* deep cypress green */
+  --sage: #7f9079; /* muted olive */
+  --pink: #ff2e7e; /* electric pink accent */
+  --rose: #c98598; /* dusty rose */
+  --gold: #b89a5e; /* aged gilt */
+
+  --background: var(--cream);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-display), Georgia, serif;
 
-  --color-aurora: #6d5efc;
-  --color-aurora-2: #c14bff;
-  --color-coral: #ff5c8a;
-  --color-mint: #3dd7b6;
+  --color-cream: var(--cream);
+  --color-cream-2: var(--cream-2);
+  --color-ink: var(--ink);
+  --color-forest: var(--forest);
+  --color-sage: var(--sage);
+  --color-pink: var(--pink);
+  --color-rose: var(--rose);
+  --color-gold: var(--gold);
 }
 
 * {
@@ -35,30 +53,67 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* ---- Leaflet polish: dark, seamless, no default chrome ---- */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* ---- Leaflet: painterly, warm, classical base ---- */
 .leaflet-container {
   height: 100%;
   width: 100%;
-  background: #0a0b1a;
+  background: var(--cream);
   font-family: var(--font-sans);
   outline: none;
 }
-
 .leaflet-control-zoom,
 .leaflet-control-attribution {
   display: none !important;
 }
-
-/* Subtly dim the base tiles so our neon UI pops */
-.leaflet-tile-pane {
-  filter: brightness(0.92) saturate(1.05);
+/* Push the modern tiles toward an aged-oil, cypress-green warmth */
+.map-paint .leaflet-tile-pane {
+  filter: sepia(0.34) saturate(0.92) hue-rotate(-12deg) brightness(1.04)
+    contrast(1.03);
 }
 
-/* ---- Reusable utility helpers ---- */
-.glass {
-  background: rgba(18, 20, 42, 0.66);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+/* ---- Surfaces ---- */
+.parchment {
+  background: var(--cream-2);
+  box-shadow: 0 10px 40px -16px rgba(35, 42, 31, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.parchment-glass {
+  background: rgba(246, 242, 232, 0.82);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+/* ---- Blueprint / coordinate grid overlay (the "analyst" texture) ---- */
+.grid-lines {
+  background-image: linear-gradient(
+      to right,
+      rgba(41, 66, 52, 0.1) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(41, 66, 52, 0.1) 1px, transparent 1px);
+  background-size: 46px 46px;
+}
+
+/* ---- Pastoral landscape backdrop (Giorgione/Titian hills + cloudy sky) ---- */
+.pastoral {
+  background: radial-gradient(
+      125% 78% at 50% 118%,
+      #233b2c 0%,
+      #3c5a45 20%,
+      #6f8a6c 38%,
+      #c2c8b0 56%,
+      var(--cream) 76%
+    ),
+    radial-gradient(
+      80% 40% at 70% 8%,
+      rgba(255, 255, 255, 0.55) 0%,
+      transparent 60%
+    );
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -98,25 +153,26 @@ body {
 
 @keyframes pin-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(193, 75, 255, 0.55);
+    box-shadow: 0 0 0 0 rgba(255, 46, 126, 0.5);
   }
   70% {
-    box-shadow: 0 0 0 16px rgba(193, 75, 255, 0);
+    box-shadow: 0 0 0 16px rgba(255, 46, 126, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(193, 75, 255, 0);
+    box-shadow: 0 0 0 0 rgba(255, 46, 126, 0);
   }
 }
 
-@keyframes float-blob {
+/* Surreal floating collage accents (dove, skateboard) */
+@keyframes drift {
   0%,
   100% {
-    transform: translate(0, 0) scale(1);
+    transform: translate(0, 0) rotate(var(--rot, 0deg));
   }
   50% {
-    transform: translate(20px, -30px) scale(1.08);
+    transform: translate(10px, -22px) rotate(var(--rot, 0deg));
   }
 }
-.animate-float-blob {
-  animation: float-blob 14s ease-in-out infinite;
+.animate-drift {
+  animation: drift 13s ease-in-out infinite;
 }
