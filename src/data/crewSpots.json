@@ -1,0 +1,46 @@
+[
+  {
+    "id": "tk-001",
+    "name": "Ichiran Ramen — Shibuya",
+    "lat": 35.659,
+    "lng": 139.7005,
+    "city": "Tokyo",
+    "category": "Late Night Food",
+    "crew": "Sarah, Emirates Crew",
+    "recommendation": "Perfect 24H spot to eat right after the midnight landing brief. The spicy tonkotsu ramen is a lifesaver and the solo booths mean zero small talk when you're running on no sleep.",
+    "image": "https://images.unsplash.com/photo-1557872943-16a5ac26437e?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": "tk-002",
+    "name": "Matsumoto Kiyoshi — Ueno",
+    "lat": 35.7138,
+    "lng": 139.7770,
+    "city": "Tokyo",
+    "category": "Grocery Haul",
+    "crew": "Mei, ANA Crew",
+    "recommendation": "Best pharmacy to stock up on Hada Labo lotion and Cabin steam eye masks before the long-haul back. Open late and the Ueno branch almost never runs out of the good sunscreen.",
+    "image": "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": "ny-001",
+    "name": "Blue Bottle — Williamsburg",
+    "lat": 40.7191,
+    "lng": -73.9573,
+    "city": "New York",
+    "category": "Early Coffee",
+    "crew": "Diego, Delta Crew",
+    "recommendation": "Opens at 6am — clutch when your body clock is still five hours ahead. Grab the New Orleans cold brew, sit by the window, and watch Brooklyn wake up before the crew bus rolls.",
+    "image": "https://images.unsplash.com/photo-1453614512568-c4024d13c247?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": "ny-002",
+    "name": "Xi'an Famous Foods — Midtown",
+    "lat": 40.7505,
+    "lng": -73.9881,
+    "city": "New York",
+    "category": "Late Night Food",
+    "crew": "Aisha, Qatar Airways Crew",
+    "recommendation": "Hand-pulled spicy cumin lamb noodles five minutes from the layover hotel. Cheap, fast, and exactly the kind of warm carb hit you need after a red-eye into JFK.",
+    "image": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=80"
+  }
+]
