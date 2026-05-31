@@ -31,11 +31,11 @@ export default function SearchBar({ onResolve }: Props) {
           e.preventDefault();
           run(value);
         }}
-        className={`parchment-glass flex items-center gap-3 rounded-2xl px-4 py-3 shadow-xl ring-1 transition-all duration-300 ${
-          focused ? "ring-pink/60 shadow-[0_10px_40px_-8px_rgba(255,46,126,.35)]" : "ring-forest/15"
+        className={`shadow-card flex items-center gap-3 rounded-2xl bg-surface px-4 py-3.5 ring-2 transition-all duration-200 ${
+          focused ? "ring-primary" : "ring-transparent"
         }`}
       >
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-pink to-rose text-base text-white shadow-md">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-lg text-white">
           ✦
         </span>
         <input
@@ -46,9 +46,9 @@ export default function SearchBar({ onResolve }: Props) {
           }}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder="Ask Crew Pocket — “late night food in Tokyo”"
+          placeholder="Search a city or ask for a vibe…"
           enterKeyHint="search"
-          className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-ink/40 focus:outline-none"
+          className="min-w-0 flex-1 bg-transparent text-base font-medium text-ink placeholder:font-normal placeholder:text-sub/70 focus:outline-none"
         />
         {value && (
           <button
@@ -58,7 +58,7 @@ export default function SearchBar({ onResolve }: Props) {
               setHint(null);
             }}
             aria-label="Clear"
-            className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-forest/10 text-ink/60 transition hover:bg-forest/20"
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-muted text-sub transition hover:bg-line"
           >
             ✕
           </button>
@@ -66,8 +66,8 @@ export default function SearchBar({ onResolve }: Props) {
       </form>
 
       {hint && (
-        <div className="animate-pop-in parchment-glass mt-2 rounded-xl px-4 py-2.5 text-[13px] ring-1 ring-forest/15">
-          <span className="text-pink">{hint}</span>
+        <div className="animate-pop-in shadow-card mt-2 rounded-2xl bg-surface px-4 py-3 text-sm font-medium text-accent">
+          {hint}
         </div>
       )}
 
@@ -82,7 +82,7 @@ export default function SearchBar({ onResolve }: Props) {
                 setValue(s);
                 run(s);
               }}
-              className="parchment-glass rounded-full px-3 py-1.5 text-xs font-medium text-ink/80 ring-1 ring-forest/15 transition hover:text-ink hover:ring-pink/60"
+              className="shadow-card rounded-full bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:bg-muted"
             >
               {s}
             </button>

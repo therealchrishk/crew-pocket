@@ -6,28 +6,28 @@ import L from "leaflet";
 import type { CrewSpot, FlyTarget } from "@/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  "Late Night Food": "#ff2e7e", // electric pink
-  "Early Coffee": "#b89a5e", // aged gilt
-  "Grocery Haul": "#294234", // cypress green
-  default: "#294234",
+  "Late Night Food": "#ff4d67", // coral
+  "Early Coffee": "#f59e0b", // amber
+  "Grocery Haul": "#10b981", // emerald
+  default: "#2563eb", // blue
 };
 
 function spotIcon(spot: CrewSpot, active: boolean) {
   const color = CATEGORY_COLORS[spot.category] ?? CATEGORY_COLORS.default;
-  const size = active ? 46 : 38;
+  const size = active ? 56 : 46;
   return L.divIcon({
     className: "crew-pin",
     html: `
       <div style="
         width:${size}px;height:${size}px;border-radius:50% 50% 50% 0;
         transform:rotate(-45deg);
-        background:linear-gradient(135deg, ${color}, ${color}cc);
-        border:2px solid rgba(255,255,255,.9);
-        box-shadow:0 8px 18px ${color}66, 0 2px 6px rgba(0,0,0,.4);
+        background:${color};
+        border:3px solid #ffffff;
+        box-shadow:0 6px 16px ${color}55, 0 2px 8px rgba(13,17,23,.28);
         display:flex;align-items:center;justify-content:center;
         ${active ? "animation:pin-pulse 1.6s infinite;" : ""}
       ">
-        <div style="transform:rotate(45deg);font-size:${active ? 18 : 15}px;line-height:1;">📍</div>
+        <div style="transform:rotate(45deg);font-size:${active ? 22 : 18}px;line-height:1;">📍</div>
       </div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size],
@@ -81,7 +81,7 @@ export default function MapCanvas({
       worldCopyJump
     >
       <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         attribution='&copy; OpenStreetMap &copy; CARTO'
       />
       <FlyController target={flyTarget} />

@@ -9,23 +9,23 @@ interface Props {
 
 const OPTIONS: { id: ViewMode; label: string; icon: string }[] = [
   { id: "map", label: "Map", icon: "🗺️" },
-  { id: "haul", label: "Inflight Haul", icon: "🛍️" },
+  { id: "haul", label: "Haul", icon: "🛍️" },
 ];
 
 export default function ViewToggle({ mode, onChange }: Props) {
   return (
-    <div className="parchment-glass pointer-events-auto relative flex rounded-full p-1 ring-1 ring-forest/15 shadow-lg">
+    <div className="shadow-card pointer-events-auto relative flex rounded-full bg-surface p-1">
       {/* sliding thumb */}
       <span
-        className="absolute inset-y-1 w-[calc(50%-0.25rem)] rounded-full bg-gradient-to-r from-forest to-[#1c2f24] shadow-md transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)]"
+        className="absolute inset-y-1 w-[calc(50%-0.25rem)] rounded-full bg-ink shadow-sm transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)]"
         style={{ transform: mode === "haul" ? "translateX(100%)" : "translateX(0)" }}
       />
       {OPTIONS.map((o) => (
         <button
           key={o.id}
           onClick={() => onChange(o.id)}
-          className={`relative z-10 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-            mode === o.id ? "text-cream" : "text-ink/55"
+          className={`relative z-10 flex items-center gap-1.5 whitespace-nowrap rounded-full px-5 py-2 text-sm font-bold transition-colors ${
+            mode === o.id ? "text-white" : "text-sub"
           }`}
         >
           <span className="text-xs">{o.icon}</span>

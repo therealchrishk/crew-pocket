@@ -2,20 +2,24 @@
 @import "leaflet/dist/leaflet.css";
 
 /* ===========================================================
-   Urban Renaissance Collage — design tokens
-   Classical oil-painting warmth + clean modern interface
+   Crew Pocket — bright, bold, professional
+   Clean white surfaces, big type, one confident accent.
+   Inspired by Google / Uber / Instagram clarity.
    =========================================================== */
 :root {
-  --cream: #efe9da; /* parchment canvas */
-  --cream-2: #f6f2e8; /* lifted surface */
-  --ink: #232a1f; /* deep charcoal-green text */
-  --forest: #294234; /* deep cypress green */
-  --sage: #7f9079; /* muted olive */
-  --pink: #ff2e7e; /* electric pink accent */
-  --rose: #c98598; /* dusty rose */
-  --gold: #b89a5e; /* aged gilt */
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --muted: #f3f5f7; /* light gray fill */
+  --line: #e7eaee; /* hairline borders */
+  --ink: #0d1117; /* near-black text */
+  --sub: #5b6573; /* secondary text */
+  --primary: #2563eb; /* confident blue */
+  --primary-press: #1d4ed8;
+  --accent: #ff4d67; /* lively coral for highlights */
+  --amber: #f59e0b;
+  --emerald: #10b981;
 
-  --background: var(--cream);
+  --background: var(--bg);
   --foreground: var(--ink);
 }
 
@@ -23,16 +27,18 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
-  --font-display: var(--font-display), Georgia, serif;
 
-  --color-cream: var(--cream);
-  --color-cream-2: var(--cream-2);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
   --color-ink: var(--ink);
-  --color-forest: var(--forest);
-  --color-sage: var(--sage);
-  --color-pink: var(--pink);
-  --color-rose: var(--rose);
-  --color-gold: var(--gold);
+  --color-sub: var(--sub);
+  --color-primary: var(--primary);
+  --color-primary-press: var(--primary-press);
+  --color-accent: var(--accent);
+  --color-amber: var(--amber);
+  --color-emerald: var(--emerald);
 }
 
 * {
@@ -53,16 +59,11 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-.font-display {
-  font-family: var(--font-display);
-  letter-spacing: -0.01em;
-}
-
-/* ---- Leaflet: painterly, warm, classical base ---- */
+/* ---- Leaflet: clean, bright, Google-like base ---- */
 .leaflet-container {
   height: 100%;
   width: 100%;
-  background: var(--cream);
+  background: #eef1f4;
   font-family: var(--font-sans);
   outline: none;
 }
@@ -70,50 +71,15 @@ body {
 .leaflet-control-attribution {
   display: none !important;
 }
-/* Push the modern tiles toward an aged-oil, cypress-green warmth */
-.map-paint .leaflet-tile-pane {
-  filter: sepia(0.34) saturate(0.92) hue-rotate(-12deg) brightness(1.04)
-    contrast(1.03);
-}
 
-/* ---- Surfaces ---- */
-.parchment {
-  background: var(--cream-2);
-  box-shadow: 0 10px 40px -16px rgba(35, 42, 31, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+/* ---- Elevation: soft, modern card shadows ---- */
+.shadow-card {
+  box-shadow: 0 1px 2px rgba(13, 17, 23, 0.06),
+    0 8px 24px -8px rgba(13, 17, 23, 0.14);
 }
-.parchment-glass {
-  background: rgba(246, 242, 232, 0.82);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-}
-
-/* ---- Blueprint / coordinate grid overlay (the "analyst" texture) ---- */
-.grid-lines {
-  background-image: linear-gradient(
-      to right,
-      rgba(41, 66, 52, 0.1) 1px,
-      transparent 1px
-    ),
-    linear-gradient(to bottom, rgba(41, 66, 52, 0.1) 1px, transparent 1px);
-  background-size: 46px 46px;
-}
-
-/* ---- Pastoral landscape backdrop (Giorgione/Titian hills + cloudy sky) ---- */
-.pastoral {
-  background: radial-gradient(
-      125% 78% at 50% 118%,
-      #233b2c 0%,
-      #3c5a45 20%,
-      #6f8a6c 38%,
-      #c2c8b0 56%,
-      var(--cream) 76%
-    ),
-    radial-gradient(
-      80% 40% at 70% 8%,
-      rgba(255, 255, 255, 0.55) 0%,
-      transparent 60%
-    );
+.shadow-float {
+  box-shadow: 0 2px 6px rgba(13, 17, 23, 0.08),
+    0 18px 40px -12px rgba(13, 17, 23, 0.22);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -134,13 +100,13 @@ body {
   }
 }
 .animate-sheet-up {
-  animation: sheet-up 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: sheet-up 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes pop-in {
   from {
     opacity: 0;
-    transform: scale(0.85) translateY(6px);
+    transform: scale(0.96) translateY(8px);
   }
   to {
     opacity: 1;
@@ -148,31 +114,17 @@ body {
   }
 }
 .animate-pop-in {
-  animation: pop-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: pop-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes pin-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 46, 126, 0.5);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.45);
   }
   70% {
-    box-shadow: 0 0 0 16px rgba(255, 46, 126, 0);
+    box-shadow: 0 0 0 16px rgba(37, 99, 235, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 46, 126, 0);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
   }
-}
-
-/* Surreal floating collage accents (dove, skateboard) */
-@keyframes drift {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(var(--rot, 0deg));
-  }
-  50% {
-    transform: translate(10px, -22px) rotate(var(--rot, 0deg));
-  }
-}
-.animate-drift {
-  animation: drift 13s ease-in-out infinite;
 }
